@@ -1,4 +1,6 @@
 /ebin
+*.log
+*.logs
 /doc
 /_test
 /.eunit
