@@ -1,0 +1,9 @@
+%% -*- erlang -*-
+{application, adserver,
+ [{description, "adserver"},
+  {vsn, "0.1"},
+  {modules, []},
+  {registered, []},
+  {mod, {'adserver_app', []}},
+  {env, []},
+  {applications, [kernel, stdlib, crypto]}]}.
