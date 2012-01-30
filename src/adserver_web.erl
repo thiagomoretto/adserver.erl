@@ -95,9 +95,9 @@ count_hit(Req, LogFile, RedisCli, ApplicationID, AdID) ->
   HitKey = lists:concat([ApplicationID, "-", AdID, "-HitCount"]),
   ViewsKey = lists:concat([ApplicationID, "-", AdID, "-Views"]),
   {ok, _Hits} = eredis:q(RedisCli, [ "INCR", HitKey ]),
-  {ok, AdUID} = eredis:q([ApplicationID, "-", AdID, "-UID"]),
+  {ok, AdUID} = eredis:q(RedisCli, [ "GET", lists:concat([ApplicationID, "-", AdID, "-UID"])]),
   % device add, device profile, etc
-  {Date={Year, Month, Day}, Time={Hour, Minutes, Seconds}} = erlang:localtime().
+  {Date={Year, Month, Day}, Time={Hour, Minutes, Seconds}} = erlang:localtime(),
   io:format(LogFile, "~s-~s-~s ~s:~s,~s,~s,~s,~s,~s,~s,~s~n", 
      [ integer_to_list(Year), 
        integer_to_list(Month), 
