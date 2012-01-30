@@ -26,13 +26,15 @@ stop() ->
 
 loop(Req, LogFile, RedisCli, _DocRoot) ->
   "/" ++ Path = Req:get(path),
+  io:format("Path ~s~n", [ Path ]),
   try
     case Req:get(method) of
       Method when Method =:= 'GET'; Method =:= 'HEAD' ->
         case Path of
           "ad/" ++ AdPath ->
-            resolve_adpath(Req, LogFile, RedisCli, AdPath);
+              resolve_adpath(Req, LogFile, RedisCli, AdPath);
             _ ->
+              io:format("not found 0~n"),
               Req:respond({404, ?DEF_REP_HEADER, ""})
               % Req:serve_file(Path, DocRoot)
         end;
@@ -71,13 +73,16 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
                 [ AdLocation, AdUID ] when AdLocation /= undefined, AdUID /= undefined ->
                   reply_with_ad(Req, AdLocation, AdUID);
                 _ -> 
+                  io:format("not found 1~n"),
                   reply_ad_not_found(Req)
               end;
             _ ->
+              io:format("not found 1~n"),
               reply_ad_not_found(Req)
           end
         end;
     _ ->
+      io:format("not found 1~n"),
       reply_ad_not_found(Req)
   end.
   
