@@ -87,7 +87,7 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
   end.
   
 reply_ad_invalid(Req, AdUID) ->
-  Req:respond({205, lists:merge(?DEF_REP_HEADER, [ ?X_GERUP_AD_UID, AdUID ]), ""}).
+  Req:respond({205, lists:merge(?DEF_REP_HEADER, [{ ?X_GERUP_AD_UID, AdUID }]), ""}).
   
 reply_ad_not_found(Req) ->
   Req:respond({404, ?DEF_REP_HEADER, ""}).
