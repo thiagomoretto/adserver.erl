@@ -61,8 +61,8 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
       Req:respond({200, ?DEF_REP_HEADER, ""});
     [ ApplicationID, AdID, ?GERUP_AD_CONTENT_PATH ] ->
       case eredis:q(RedisCli, ["GET", lists:concat([ApplicationID, "-", AdID, "-Invalidate"])]) of
-        {ok, <<"TRUE">>} ->
-          reply_ad_invalid(Req);
+        {ok, AdUID} ->
+          reply_ad_invalid(Req, AdUID);
         _ ->
           case eredis:q(RedisCli, 
               ["MGET", 
@@ -86,8 +86,8 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
       reply_ad_not_found(Req)
   end.
   
-reply_ad_invalid(Req) ->
-  Req:respond({205, ?DEF_REP_HEADER, ""}).
+reply_ad_invalid(Req, AdUID) ->
+  Req:respond({205, lists:merge(?DEF_REP_HEADER, [ ?X_GERUP_AD_UID, AdUID ]), ""}).
   
 reply_ad_not_found(Req) ->
   Req:respond({404, ?DEF_REP_HEADER, ""}).
