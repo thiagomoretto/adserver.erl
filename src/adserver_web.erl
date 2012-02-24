@@ -60,6 +60,7 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
       count_hit(Req, LogFile, RedisCli, ApplicationID, AdID),
       Req:respond({200, ?DEF_REP_HEADER, ""});
     [ ApplicationID, AdID, ?GERUP_AD_CONTENT_PATH ] ->
+      RequestAdUID = Req:get_header_value(?X_GERUP_AD_UID),
       case eredis:q(RedisCli, ["GET", lists:concat([ApplicationID, "-", AdID, "-Invalidate"])]) of
         {ok, AdUID} when AdUID /= undefined ->
           reply_ad_invalid(Req, AdUID);
@@ -70,6 +71,8 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
                 lists:concat([ApplicationID, "-", AdID, "-UID"])]) of
             {ok, Values} ->
               case Values of
+                [ AdLocation, AdUID ] when AdLocation /= undefined, RequestAdUID =:= AdUID ->
+                  reply_with_not_modified(Req, AdLocation, AdUID);
                 [ AdLocation, AdUID ] when AdLocation /= undefined, AdUID /= undefined ->
                   reply_with_ad(Req, AdLocation, AdUID);
                 _ -> 
@@ -85,6 +88,9 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
       io:format("not found 1~n"),
       reply_ad_not_found(Req)
   end.
+  
+reply_with_not_modified(Req, _AdLocation, AdUID) ->
+  Req:respond({304, lists:merge(?DEF_REP_HEADER, [{ ?X_GERUP_AD_UID, AdUID }]), ""}).
   
 reply_ad_invalid(Req, AdUID) ->
   Req:respond({205, lists:merge(?DEF_REP_HEADER, [{ ?X_GERUP_AD_UID, AdUID }]), ""}).
