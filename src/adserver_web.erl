@@ -71,10 +71,13 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
                 lists:concat([ApplicationID, "-", AdID, "-UID"])]) of
             {ok, Values} ->
               case Values of
-                [ AdLocation, AdUID ] when AdLocation /= undefined, RequestAdUID =:= AdUID ->
-                  reply_with_not_modified(Req, AdLocation, AdUID);
                 [ AdLocation, AdUID ] when AdLocation /= undefined, AdUID /= undefined ->
-                  reply_with_ad(Req, AdLocation, AdUID);
+                  case binary_to_list(AdUID) of
+                    RequestAdUID ->
+                      reply_with_not_modified(Req, AdLocation, RequestAdUID);
+                    _ ->
+                      reply_with_ad(Req, AdLocation, AdUID)
+                  end;
                 _ -> 
                   io:format("not found 1~n"),
                   reply_ad_not_found(Req)
@@ -89,16 +92,19 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
       reply_ad_not_found(Req)
   end.
   
-reply_with_not_modified(Req, _AdLocation, AdUID) ->
-  Req:respond({304, lists:merge(?DEF_REP_HEADER, [{ ?X_GERUP_AD_UID, AdUID }]), ""}).
+reply_with_not_modified(Req, AdLocation, AdUID) ->
+  io:format("[debug] reply_with_not_modified: ~s~n", [ AdUID ]),
+  Req:respond({304, lists:merge(?DEF_REP_HEADER, [{ "Location", AdLocation}, {?X_GERUP_AD_UID, AdUID }]), ""}).
   
 reply_ad_invalid(Req, AdUID) ->
+  io:format("[debug] reply_ad_invalid: ~s~n", [ AdUID ]),
   Req:respond({205, lists:merge(?DEF_REP_HEADER, [{ ?X_GERUP_AD_UID, AdUID }]), ""}).
   
 reply_ad_not_found(Req) ->
   Req:respond({404, ?DEF_REP_HEADER, ""}).
   
 reply_with_ad(Req, AdLocation, AdUID) when AdLocation /= nil, AdUID /= nil ->
+  io:format("[debug] reply_with_ad: ~s~n", [ AdUID ]),
   Req:respond({302, 
     lists:merge(?DEF_REP_HEADER, [{ "Location", AdLocation }, { ?X_GERUP_AD_UID, AdUID }]), ""}).
   
