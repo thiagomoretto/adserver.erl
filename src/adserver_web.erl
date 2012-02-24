@@ -5,7 +5,7 @@
 -author("Thiago Moretto <thiago@gerup.com>").
 
 -export([start/1, stop/0, loop/4]).
--define(X_GERUP_AD_UID, "X-Gerup-Aduid").
+-define(X_GERUP_AD_UID, "X-Gerupad-Aduid").
 -define(GERUP_AD_HIT_PATH,      "hit").
 -define(GERUP_AD_CONTENT_PATH,  "content").
 -define(GERUP_SERVER,           "GerupAdServer").
@@ -61,7 +61,7 @@ resolve_adpath(Req, LogFile, RedisCli, AdPath) ->
       Req:respond({200, ?DEF_REP_HEADER, ""});
     [ ApplicationID, AdID, ?GERUP_AD_CONTENT_PATH ] ->
       case eredis:q(RedisCli, ["GET", lists:concat([ApplicationID, "-", AdID, "-Invalidate"])]) of
-        {ok, AdUID} ->
+        {ok, AdUID} when AdUID /= undefined ->
           reply_ad_invalid(Req, AdUID);
         _ ->
           case eredis:q(RedisCli, 
